@@ -1,0 +1,83 @@
+\hypertarget{common_8c}{
+\section{src/common.c File Reference}
+\label{common_8c}\index{src/common.c@{src/common.c}}
+}
+{\ttfamily \#include \char`\"{}common.h\char`\"{}}\par
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34}{mtn\_\-request\_\-type} \hyperlink{common_8c_aaaf3781f2aeb6bc1e56bdda7c1f83c95}{get\_\-request\_\-type} (const char $\ast$req\_\-buf, size\_\-t req\_\-len)
+\item 
+int \hyperlink{common_8c_a59a8c703b2ae03d7c0b918015fb8f7e9}{strcopy} (char $\ast$dest, size\_\-t $\ast$dest\_\-position, const char $\ast$src, size\_\-t copy\_\-len)
+\item 
+bool \hyperlink{common_8c_ad5fef9a050356c6f6625446ab67adffa}{str\_\-replace} (const char $\ast$what, const char $\ast$with, const char $\ast$in, char $\ast$where)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{common_8c_aaaf3781f2aeb6bc1e56bdda7c1f83c95}{
+\index{common.c@{common.c}!get\_\-request\_\-type@{get\_\-request\_\-type}}
+\index{get\_\-request\_\-type@{get\_\-request\_\-type}!common.c@{common.c}}
+\subsubsection[{get\_\-request\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}{\bf mtn\_\-request\_\-type} get\_\-request\_\-type (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{req\_\-buf, }
+\item[{size\_\-t}]{req\_\-len}
+\end{DoxyParamCaption}
+)}}
+\label{common_8c_aaaf3781f2aeb6bc1e56bdda7c1f83c95}
+
+
+Definition at line 4 of file common.c.
+
+\hypertarget{common_8c_ad5fef9a050356c6f6625446ab67adffa}{
+\index{common.c@{common.c}!str\_\-replace@{str\_\-replace}}
+\index{str\_\-replace@{str\_\-replace}!common.c@{common.c}}
+\subsubsection[{str\_\-replace}]{\setlength{\rightskip}{0pt plus 5cm}bool str\_\-replace (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{what, }
+\item[{const char $\ast$}]{with, }
+\item[{const char $\ast$}]{in, }
+\item[{char $\ast$}]{where}
+\end{DoxyParamCaption}
+)}}
+\label{common_8c_ad5fef9a050356c6f6625446ab67adffa}
+Replaces substring in a string with another
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em what} & what to replace \\
+\hline
+\mbox{\tt in}  & {\em with} & replace with what \\
+\hline
+\mbox{\tt in}  & {\em in} & source string \\
+\hline
+\mbox{\tt out}  & {\em where} & where the result come\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em true} & on success \\
+\hline
+{\em false} & on failure \\
+\hline
+\end{DoxyRetVals}
+
+
+Definition at line 38 of file common.c.
+
+\hypertarget{common_8c_a59a8c703b2ae03d7c0b918015fb8f7e9}{
+\index{common.c@{common.c}!strcopy@{strcopy}}
+\index{strcopy@{strcopy}!common.c@{common.c}}
+\subsubsection[{strcopy}]{\setlength{\rightskip}{0pt plus 5cm}int strcopy (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{dest, }
+\item[{size\_\-t $\ast$}]{dest\_\-position, }
+\item[{const char $\ast$}]{src, }
+\item[{size\_\-t}]{copy\_\-len}
+\end{DoxyParamCaption}
+)}}
+\label{common_8c_a59a8c703b2ae03d7c0b918015fb8f7e9}
+
+
+Definition at line 25 of file common.c.
+

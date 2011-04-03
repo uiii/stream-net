@@ -1,0 +1,185 @@
+\hypertarget{mtn-protocol_8h}{
+\section{src/mtn-\/protocol.h File Reference}
+\label{mtn-protocol_8h}\index{src/mtn-\/protocol.h@{src/mtn-\/protocol.h}}
+}
+\subsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{mtn-protocol_8h_a53c3fd64ca318700a014307282a75427}{MTN\_\-REQ\_\-MSG\_\-LEN}~32
+\item 
+\#define \hyperlink{mtn-protocol_8h_a7fb87448607e65238cf0581c5eac7131}{MTN\_\-RES\_\-MSG\_\-LEN}~128
+\item 
+\#define \hyperlink{mtn-protocol_8h_a961ce2f3830c4d719a85504965d2b898}{MTN\_\-MSG\_\-BLOCK\_\-LEN}~1024
+\item 
+\#define \hyperlink{mtn-protocol_8h_aacfb594515b533dee748cd6bf3f8d461}{SRV\_\-NAME\_\-LEN}~128
+\item 
+\#define \hyperlink{mtn-protocol_8h_ad4068c695fe365b4818d7d3998fc2720}{SRV\_\-SET\_\-LEN}~8
+\item 
+\#define \hyperlink{mtn-protocol_8h_a383295deb5005dfbd7eee3108638474f}{SRV\_\-DESCR\_\-LEN}~256
+\item 
+\#define \hyperlink{mtn-protocol_8h_a80e112818318cea58e0724380104ae43}{MTN\_\-REQ\_\-SUBSCR\_\-TXT}~\char`\"{}SUBSCR\char`\"{}
+\item 
+\#define \hyperlink{mtn-protocol_8h_af89799e6a27d6b795bceaa5725f3ced4}{MTN\_\-REQ\_\-UPDATE\_\-TXT}~\char`\"{}UPDATE\char`\"{}
+\item 
+\#define \hyperlink{mtn-protocol_8h_aaf4374213d7cfb5e00418861325e67e8}{MTN\_\-REQ\_\-RESEND\_\-TXT}~\char`\"{}RESEND\char`\"{}
+\item 
+\#define \hyperlink{mtn-protocol_8h_aa10ec7921d29bd9fca25c36d6e8956b6}{MTN\_\-RES\_\-TXT}~\char`\"{}\char`\"{}
+\item 
+\#define \hyperlink{mtn-protocol_8h_ae3bdd167e68bb5c95cc9eaf92cc4a4b5}{MATCH\_\-REQ}(req\_\-buf, req\_\-len, req\_\-type\_\-txt)
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34}{mtn\_\-request\_\-type} \{ \hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34afa5f9c3fbf0152a2ea598133d55d822e}{MTN\_\-REQ\_\-SUBSCR}, 
+\hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a046270a59edc0b95af1984699f03ed76}{MTN\_\-REQ\_\-UPDATE}, 
+\hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a94231d0c62a0c0f2912c4fbb8e4e0a86}{MTN\_\-REQ\_\-RESEND}, 
+\hyperlink{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a1593554b7168500f819f2876ae17149d}{MTN\_\-REQ\_\-UNKNOWN}
+ \}
+\end{DoxyCompactItemize}
+
+
+\subsection{Define Documentation}
+\hypertarget{mtn-protocol_8h_ae3bdd167e68bb5c95cc9eaf92cc4a4b5}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MATCH\_\-REQ@{MATCH\_\-REQ}}
+\index{MATCH\_\-REQ@{MATCH\_\-REQ}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MATCH\_\-REQ}]{\setlength{\rightskip}{0pt plus 5cm}\#define MATCH\_\-REQ(
+\begin{DoxyParamCaption}
+\item[{}]{req\_\-buf, }
+\item[{}]{req\_\-len, }
+\item[{}]{req\_\-type\_\-txt}
+\end{DoxyParamCaption}
+)}}
+\label{mtn-protocol_8h_ae3bdd167e68bb5c95cc9eaf92cc4a4b5}
+{\bfseries Value:}
+\begin{DoxyCode}
+((req_len) >= strlen(req_type_txt) \
+        && strncmp(req_buf, req_type_txt, strlen(req_type_txt)) == 0)
+\end{DoxyCode}
+
+
+Definition at line 56 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_a961ce2f3830c4d719a85504965d2b898}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-MSG\_\-BLOCK\_\-LEN@{MTN\_\-MSG\_\-BLOCK\_\-LEN}}
+\index{MTN\_\-MSG\_\-BLOCK\_\-LEN@{MTN\_\-MSG\_\-BLOCK\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-MSG\_\-BLOCK\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-MSG\_\-BLOCK\_\-LEN~1024}}
+\label{mtn-protocol_8h_a961ce2f3830c4d719a85504965d2b898}
+
+
+Definition at line 42 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_a53c3fd64ca318700a014307282a75427}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-MSG\_\-LEN@{MTN\_\-REQ\_\-MSG\_\-LEN}}
+\index{MTN\_\-REQ\_\-MSG\_\-LEN@{MTN\_\-REQ\_\-MSG\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-REQ\_\-MSG\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-REQ\_\-MSG\_\-LEN~32}}
+\label{mtn-protocol_8h_a53c3fd64ca318700a014307282a75427}
+
+
+Definition at line 40 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_aaf4374213d7cfb5e00418861325e67e8}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-RESEND\_\-TXT@{MTN\_\-REQ\_\-RESEND\_\-TXT}}
+\index{MTN\_\-REQ\_\-RESEND\_\-TXT@{MTN\_\-REQ\_\-RESEND\_\-TXT}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-REQ\_\-RESEND\_\-TXT}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-REQ\_\-RESEND\_\-TXT~\char`\"{}RESEND\char`\"{}}}
+\label{mtn-protocol_8h_aaf4374213d7cfb5e00418861325e67e8}
+
+
+Definition at line 51 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_a80e112818318cea58e0724380104ae43}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-SUBSCR\_\-TXT@{MTN\_\-REQ\_\-SUBSCR\_\-TXT}}
+\index{MTN\_\-REQ\_\-SUBSCR\_\-TXT@{MTN\_\-REQ\_\-SUBSCR\_\-TXT}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-REQ\_\-SUBSCR\_\-TXT}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-REQ\_\-SUBSCR\_\-TXT~\char`\"{}SUBSCR\char`\"{}}}
+\label{mtn-protocol_8h_a80e112818318cea58e0724380104ae43}
+
+
+Definition at line 49 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_af89799e6a27d6b795bceaa5725f3ced4}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-UPDATE\_\-TXT@{MTN\_\-REQ\_\-UPDATE\_\-TXT}}
+\index{MTN\_\-REQ\_\-UPDATE\_\-TXT@{MTN\_\-REQ\_\-UPDATE\_\-TXT}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-REQ\_\-UPDATE\_\-TXT}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-REQ\_\-UPDATE\_\-TXT~\char`\"{}UPDATE\char`\"{}}}
+\label{mtn-protocol_8h_af89799e6a27d6b795bceaa5725f3ced4}
+
+
+Definition at line 50 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_a7fb87448607e65238cf0581c5eac7131}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-RES\_\-MSG\_\-LEN@{MTN\_\-RES\_\-MSG\_\-LEN}}
+\index{MTN\_\-RES\_\-MSG\_\-LEN@{MTN\_\-RES\_\-MSG\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-RES\_\-MSG\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-RES\_\-MSG\_\-LEN~128}}
+\label{mtn-protocol_8h_a7fb87448607e65238cf0581c5eac7131}
+
+
+Definition at line 41 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_aa10ec7921d29bd9fca25c36d6e8956b6}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-RES\_\-TXT@{MTN\_\-RES\_\-TXT}}
+\index{MTN\_\-RES\_\-TXT@{MTN\_\-RES\_\-TXT}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{MTN\_\-RES\_\-TXT}]{\setlength{\rightskip}{0pt plus 5cm}\#define MTN\_\-RES\_\-TXT~\char`\"{}\char`\"{}}}
+\label{mtn-protocol_8h_aa10ec7921d29bd9fca25c36d6e8956b6}
+
+
+Definition at line 54 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_a383295deb5005dfbd7eee3108638474f}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!SRV\_\-DESCR\_\-LEN@{SRV\_\-DESCR\_\-LEN}}
+\index{SRV\_\-DESCR\_\-LEN@{SRV\_\-DESCR\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{SRV\_\-DESCR\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define SRV\_\-DESCR\_\-LEN~256}}
+\label{mtn-protocol_8h_a383295deb5005dfbd7eee3108638474f}
+
+
+Definition at line 46 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_aacfb594515b533dee748cd6bf3f8d461}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!SRV\_\-NAME\_\-LEN@{SRV\_\-NAME\_\-LEN}}
+\index{SRV\_\-NAME\_\-LEN@{SRV\_\-NAME\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{SRV\_\-NAME\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define SRV\_\-NAME\_\-LEN~128}}
+\label{mtn-protocol_8h_aacfb594515b533dee748cd6bf3f8d461}
+
+
+Definition at line 44 of file mtn-\/protocol.h.
+
+\hypertarget{mtn-protocol_8h_ad4068c695fe365b4818d7d3998fc2720}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!SRV\_\-SET\_\-LEN@{SRV\_\-SET\_\-LEN}}
+\index{SRV\_\-SET\_\-LEN@{SRV\_\-SET\_\-LEN}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{SRV\_\-SET\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define SRV\_\-SET\_\-LEN~8}}
+\label{mtn-protocol_8h_ad4068c695fe365b4818d7d3998fc2720}
+
+
+Definition at line 45 of file mtn-\/protocol.h.
+
+
+
+\subsection{Enumeration Type Documentation}
+\hypertarget{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34}{
+\index{mtn-\/protocol.h@{mtn-\/protocol.h}!mtn\_\-request\_\-type@{mtn\_\-request\_\-type}}
+\index{mtn\_\-request\_\-type@{mtn\_\-request\_\-type}!mtn-protocol.h@{mtn-\/protocol.h}}
+\subsubsection[{mtn\_\-request\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf mtn\_\-request\_\-type}}}
+\label{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34}
+\begin{Desc}
+\item[Enumerator: ]\par
+\begin{description}
+\index{MTN\_\-REQ\_\-SUBSCR@{MTN\_\-REQ\_\-SUBSCR}!mtn-\/protocol.h@{mtn-\/protocol.h}}\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-SUBSCR@{MTN\_\-REQ\_\-SUBSCR}}\item[{\em 
+\hypertarget{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34afa5f9c3fbf0152a2ea598133d55d822e}{
+MTN\_\-REQ\_\-SUBSCR}
+\label{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34afa5f9c3fbf0152a2ea598133d55d822e}
+}]\index{MTN\_\-REQ\_\-UPDATE@{MTN\_\-REQ\_\-UPDATE}!mtn-\/protocol.h@{mtn-\/protocol.h}}\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-UPDATE@{MTN\_\-REQ\_\-UPDATE}}\item[{\em 
+\hypertarget{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a046270a59edc0b95af1984699f03ed76}{
+MTN\_\-REQ\_\-UPDATE}
+\label{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a046270a59edc0b95af1984699f03ed76}
+}]\index{MTN\_\-REQ\_\-RESEND@{MTN\_\-REQ\_\-RESEND}!mtn-\/protocol.h@{mtn-\/protocol.h}}\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-RESEND@{MTN\_\-REQ\_\-RESEND}}\item[{\em 
+\hypertarget{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a94231d0c62a0c0f2912c4fbb8e4e0a86}{
+MTN\_\-REQ\_\-RESEND}
+\label{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a94231d0c62a0c0f2912c4fbb8e4e0a86}
+}]\index{MTN\_\-REQ\_\-UNKNOWN@{MTN\_\-REQ\_\-UNKNOWN}!mtn-\/protocol.h@{mtn-\/protocol.h}}\index{mtn-\/protocol.h@{mtn-\/protocol.h}!MTN\_\-REQ\_\-UNKNOWN@{MTN\_\-REQ\_\-UNKNOWN}}\item[{\em 
+\hypertarget{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a1593554b7168500f819f2876ae17149d}{
+MTN\_\-REQ\_\-UNKNOWN}
+\label{mtn-protocol_8h_a0428ffebf6e72018c51d0aaad6ad0c34a1593554b7168500f819f2876ae17149d}
+}]\end{description}
+\end{Desc}
+
+
+
+Definition at line 60 of file mtn-\/protocol.h.
+

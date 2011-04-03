@@ -1,0 +1,54 @@
+\hypertarget{request_8c}{
+\section{src/request.c File Reference}
+\label{request_8c}\index{src/request.c@{src/request.c}}
+}
+{\ttfamily \#include \char`\"{}request.h\char`\"{}}\par
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$unistd.h$>$}\par
+{\ttfamily \#include $<$sys/socket.h$>$}\par
+{\ttfamily \#include $<$netinet/in.h$>$}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include \char`\"{}common.h\char`\"{}}\par
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structmtn__server__info}{mtn\_\-server\_\-info}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{request_8c_ae648b0bdf8638360b2587a2c19f011c1}{get\_\-message} (char $\ast$info\_\-message, struct \hyperlink{structmtn__server__info}{mtn\_\-server\_\-info} info)
+\item 
+void \hyperlink{request_8c_ad01b58e9058724134574ebc7eecb8f24}{request\_\-control} (int socket\_\-fd)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{request_8c_ae648b0bdf8638360b2587a2c19f011c1}{
+\index{request.c@{request.c}!get\_\-message@{get\_\-message}}
+\index{get\_\-message@{get\_\-message}!request.c@{request.c}}
+\subsubsection[{get\_\-message}]{\setlength{\rightskip}{0pt plus 5cm}void get\_\-message (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{info\_\-message, }
+\item[{struct {\bf mtn\_\-server\_\-info}}]{info}
+\end{DoxyParamCaption}
+)}}
+\label{request_8c_ae648b0bdf8638360b2587a2c19f011c1}
+
+
+Definition at line 20 of file request.c.
+
+\hypertarget{request_8c_ad01b58e9058724134574ebc7eecb8f24}{
+\index{request.c@{request.c}!request\_\-control@{request\_\-control}}
+\index{request\_\-control@{request\_\-control}!request.c@{request.c}}
+\subsubsection[{request\_\-control}]{\setlength{\rightskip}{0pt plus 5cm}void request\_\-control (
+\begin{DoxyParamCaption}
+\item[{int}]{socket\_\-fd}
+\end{DoxyParamCaption}
+)}}
+\label{request_8c_ad01b58e9058724134574ebc7eecb8f24}
+
+
+Definition at line 38 of file request.c.
+
