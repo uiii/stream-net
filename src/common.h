@@ -6,6 +6,25 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
+
+#define LINE_MAX_SIZE 4096
+#define TOKEN_MAX_SIZE 4096
+
+#define USER_CFG_PATH "~/.config/mtn/server/"
+
+#define USER_SERVER_CFG_FILE "server.conf"
+
+#define USER_CLIENT_CFG_FILE "client.conf"
+#define USER_CLIENT_SERVER_LIST_FILE "client/server_list"
+
+#define EXAMPLE_SERVER_CFG_FILE "server.conf.example"
+#define EXAMPLE_CLIENT_CFG_FILE "client.conf.example"
+
+#define SERVER_DEFAULT_PORT 48888
+#define SERVER_DEFAULT_SET 60
+
+#define SERVER_RESPONSE_TIMEOUT 30
 
 struct msg_id
 {
@@ -21,8 +40,6 @@ struct mtn_request
     } info;
 };
 
-mtn_request_type get_request_type(const char* req_buf, size_t req_len);
-
 int strcopy(char* dest, size_t* dest_position, const char* src, int copy_len);
 
 /**
@@ -37,5 +54,11 @@ int strcopy(char* dest, size_t* dest_position, const char* src, int copy_len);
  * @param[out] where where the result come
  */
 void str_replace(const char* what, const char* with, const char* in, char* where);
+
+void init_dir(char* path);
+void init_file(char* file_path, const char* example_file);
+
+int get_file_line(char* line, int conf_file_fd, bool nonempty);
+int get_token(char* token, const char* str, const char* delim, bool from_beginning);
 
 #endif

@@ -37,8 +37,14 @@
  * (Message transmission net)
  */
 
-#define MTN_REQ_MSG_LEN 32 // length of client request message
-#define MTN_RES_MSG_LEN 128 // length of server response to request message
+#define MTN_REQ_TYPE_LEN 6 // length of client request type
+#define MTN_RES_TYPE_LEN 7 // length of server response type
+
+#define MTN_REQ_DATA_LEN 32 // length of client request data
+#define MTN_RES_DATA_LEN 128 // length of server response data
+
+#define MTN_REQ_MSG_LEN (MTN_REQ_TYPE_LEN + MTN_REQ_DATA_LEN) // length of client request message
+#define MTN_RES_MSG_LEN (MTN_RES_TYPE_LEN + MTN_RES_DATA_LEN) // length of server response to request message
 #define MTN_MSG_BLOCK_LEN 1024 // length of message block
 
 #define SRV_NAME_LEN 128 // max length of server name
@@ -51,7 +57,8 @@
 #define MTN_REQ_RESEND_TXT "RESEND" // request for message block resending
 
 /* protocol commands server -> client */
-#define MTN_RES_TXT "" // TODO
+#define MTN_RES_SUCC_TXT "SUCCESS" // request for message block resending
+#define MTN_RES_FAIL_TXT "FAILURE" // request for message block resending
 
 #define MATCH_REQ(req_buf, req_len, req_type_txt) \
     ((req_len) >= strlen(req_type_txt) \
@@ -64,5 +71,18 @@ typedef enum
     MTN_REQ_RESEND,
     MTN_REQ_UNKNOWN
 } mtn_request_type;
+
+typedef enum
+{
+    MTN_RES_SUCCESS,
+    MTN_RES_FAILURE,
+    MTN_RES_UNKNOWN
+} mtn_response_type;
+
+mtn_request_type get_request_type(const char* req_buf, size_t req_len)
+void get_request_type_str(char* req_type_str, const char* req_buf)
+
+mtn_response_type get_response_type(const char* res_buf, size_t res_len)
+void get_response_type_str(char* res_type_str, const char* res_buf)
 
 #endif

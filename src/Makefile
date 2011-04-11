@@ -2,7 +2,7 @@ CFLAGS=-Wall -std=c99
 
 all: mtn-server mtn-client
 
-mtn-server: mtn-server.o request.o transmission.o common.o
+mtn-server: mtn-server.o request.o transmission.o common.o mtn-server-config.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 mtn-client:

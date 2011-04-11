@@ -8,26 +8,26 @@
 #include <string.h>
 
 #include "common.h"
-
-struct mtn_server_info
-{
-    char name[SRV_NAME_LEN + 1];
-    char subscr_expr_time[SRV_SET_LEN + 1];
-    char descr[SRV_DESCR_LEN + 1];
-};
+#include "mtn-server.h"
 
 void
-get_message(char* info_message, struct mtn_server_info info)
+get_server_info_message(char* info_message)
 {
+    struct server_config* server = get_server_config();
+
     char message[MTN_RES_MSG_LEN + 1];
 
     size_t position = 0;
-    strcopy(message, &position, "NAME: ", 1);
-    strcopy(message, &position, info.name, SRV_NAME_LEN);
-    strcopy(message, &position, "\nSET: ", 1);
-    strcopy(message, &position, info.subscr_expr_time, SRV_SET_LEN);
-    strcopy(message, &position, "\nDESCR: ", 1);
-    strcopy(message, &position, info.descr, SRV_DESCR_LEN);
+    strcopy(message, &position, "\nNAME: ", -1);
+    strcopy(message, &position, server->name, SRV_NAME_LEN);
+    strcopy(message, &position, "\nSET: ", -1);
+    
+    char set[SRV_SET_LEN];
+    sprintf(set, "%ld", server->set);
+    strcopy(message, &position, set, SRV_SET_LEN);
+
+    strcopy(message, &position, "\nDESCR: ", -1);
+    strcopy(message, &position, server->descr, SRV_DESCR_LEN);
 
     message[position] = '\0';
 
@@ -45,15 +45,18 @@ request_control(int socket_fd)
     struct sockaddr_in address;
     socklen_t addr_len;
 
+        printf("listen\n");
     while((req_len = recvfrom(socket_fd, request_msg, MTN_REQ_MSG_LEN, 0,
                     (struct sockaddr*) &address, &addr_len)) > 0)
     {
+        printf("recieve\n");
         mtn_request_type req_type = get_request_type(request_msg, req_len);
-        struct mtn_server_info s; // TODO
         switch(req_type)
         {
             case MTN_REQ_SUBSCR: // request for subscription
-                get_message(response_msg, s);
+                printf("subscr\n");
+                get_server_info_message(response_msg);
+                printf("%s\n", response_msg);
                 sendto(socket_fd, response_msg, MTN_RES_MSG_LEN, 0,
                         (struct sockaddr*) &address, addr_len);
                 break;
