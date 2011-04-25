@@ -1,110 +1,135 @@
-#include "mtn-server-list.h"
+#include "mtn-client-server-list.h"
 
-client_server_list
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <err.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+#include "mtn-client.h"
+
+server_map*
+client_server_map()
+{
+    static server_map map = NULL;
+    return &map;
+}
+
+void
 load_client_server_list(const char* server_list_file)
 {
     int server_list_file_fd;
-    server_list_file_fd = load_client_server_list(server_list_file);
-
-    struct address_list_node* list = parse_client_server_list(server_list_file_fd);
-    return list;
-}
-
-int
-load_client_server_list_file(const char* server_list_file)
-{
-    int server_list_file_fd;
-    if(server_list_file == NULL)
+    if(server_list_file)
     {
-        char path[4096];
-        str_replace("~", getenv("HOME"), USER_CFG_PATH, path);
-        init_dir(path);
-
-        strcat(path, USER_CLIENT_SERVER_LIST_FILE);
-        init_file(path, NULL);
-
-        server_list_file_fd = open(path, O_RDONLY);
+        server_list_file_fd = load_file(server_list_file, O_RDONLY, NULL);
     }
     else
     {
-        server_list_file_fd = open(server_list_file, O_RDONLY);
+        server_list_file_fd = load_file(USER_CLIENT_SERVER_LIST_FILE, O_RDONLY, NULL);
     }
 
     if(server_list_file_fd == -1)
     {
-        err(1, "Cannot open server list file");
+        warning("client server list won't be loaded");
     }
-
-    return server_list_file_fd;
+    else
+    {
+        /*server_map* map = client_server_map();
+        *map = parse_client_server_list(server_list_file_fd);*/
+        *client_server_map() = parse_client_server_list(server_list_file_fd);
+    }
 }
 
-client_server_list
-parse_client_server_list(int server_list_file_fd);
+server_map
+parse_client_server_list(int server_list_file_fd)
 {
-    client_server_list list = NULL;
-
-    int count = 0;
+    server_map map = NULL;
 
     char line[4096];
     while(get_file_line(line, server_list_file_fd, true) != -1)
     {
+        char* line_ptr = line;
+
         char address_str[4096];
-        get_token(address_str, line, " \t", true);
+        get_token(address_str, &line_ptr, " \t");
 
         struct sockaddr_in address;
         memset(&address, 0, sizeof(address));
 
         address.sin_family = AF_INET;
 
-        char ip_adress_str[INET_ADDRSTRLEN];
-        if(get_token(ip_adress_str, address_str, ":", true))
+        char* address_str_ptr = address_str;
+
+        char ip_address_str[INET_ADDRSTRLEN];
+        if(get_token(ip_address_str, &address_str_ptr, ":"))
         {
             if(inet_pton(AF_INET, ip_address_str, &(address.sin_addr)) != 1)
             {
-                fprintf(stderr, "Error: invalid IP adress '%s' ... IGNORING\n", ip_address_str);
+                error("invalid IP adress '%s' ... IGNORING", ip_address_str);
             }
             else
             {
+                int port = 0;
                 char port_str[5];
-                if(get_token(port, address_str, ":", false))
+
+                if(get_token(port_str, &address_str_ptr, ":"))
                 {
-                    address.sin_port = htons(atoi(port_str));
+                    port = atoi(port_str);
+                }
+
+                if(port == 0)
+                {
+                    warning("using default server port for IP adress '%s'", ip_address_str);
+                    port = SERVER_DEFAULT_PORT;
+                }
+
+                address.sin_port = htons(port);
+
+                struct server_map_node* node;
+                HASH_FIND(hh, map, &address, sizeof(address), node);
+
+                if(node)
+                {
+                    error("server %s:%d already loaded ... IGNORING", ip_address_str, port);
                 }
                 else
                 {
-                    printf("Warning: using default server port for IP adress '%s'", ip_address_str);
-                    address.sin_port = htons(SERVER_DEFAULT_PORT);
+                    info("loading %s:%d server from list", ip_address_str, port);
+
+                    node = (struct server_map_node*) malloc(sizeof(struct server_map_node));
+                    struct server_data* server_data = (struct server_data*) malloc(sizeof(struct server_data));
+                    if(node == NULL || server_data == NULL)
+                    {
+                        fatal_error_errno(1, "cannot allocate memory");
+                    }
+                    else
+                    {
+                        memset(node, 0, sizeof(node));
+                        memset(server_data, 0, sizeof(server_data));
+
+                        server_data->address = address;
+                        pthread_mutex_init(&server_data->mutex, NULL);
+
+                        node->key = address;
+                        node->data = server_data;
+                    }
+
+                    // add address node to server map
+                    HASH_ADD(hh, map, key, sizeof(server_map_key), node);
                 }
-
-                struct server_list_node* node = (struct server_list_node*) malloc(sizeof(struct server_list_node));
-                struct server_data* server_data = (struct server_data*) malloc(sizeof(struct server_data));
-                if(node == NULL || server_data == NULL)
-                {
-                    fprintf(stderr, "Fatal Error: cannot allocate memory\n");
-                    exit(1);
-                }
-                else
-                {
-                    memset(node, 0, sizeof(node));
-                    memset(server_data, 0, sizeof(server_data));
-
-                    server_data->address = address;
-
-                    node->data = server_data;
-                }
-
-                // add address node to linked list
-                DL_APPEND(list, node);
-
-                count++;
             }
         }
     }
 
+    int count = HASH_COUNT(map);
     if(count == 0)
     {
-        fprintf(stderr, "Warning: no server is present in server list\n");
+        warning("no server is present in the server list");
+    }
+    else
+    {
+        info("%d server%s loaded", count, (count > 1) ? "s" : "");
     }
 
-    return list;
+    return map;
 }

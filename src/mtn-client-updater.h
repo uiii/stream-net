@@ -3,8 +3,11 @@
 
 #include "mtn-client-server-list.h"
 
-void update_control(client_server_list list);
+void update_control();
 
-void send_request(struct server_data* data, const char* request, void (*response_callback)(const char* response));
+void* send_subscription_request_thread(void* server_data);
+
+void* subscription_thread(void*);
+void* update_thread(void*);
 
 #endif

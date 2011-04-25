@@ -4,27 +4,74 @@
  * (c) uiii.dev@gmail.com
  */
 
-#include "mtn-server.h"
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
-#include <err.h>
 #include <getopt.h>
-#include <stdbool.h>
-#include <fcntl.h>
-#include <string.h>
-
-#include <sys/wait.h>
+#include <pthread.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <signal.h>
 
-#include "common.h"
+#include "mtn-common.h"
+#include "mtn-server.h"
 
-#include "request.h"
-#include "transmission.h"
+#include "mtn-server-receiver.h"
+#include "mtn-server-transmitter.h"
+#include "mtn-server-data-message.h"
+
+int
+server_socket_fd()
+{
+    static int socket_fd = -1;
+
+    if(socket_fd == -1)
+    {
+        socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+        if(socket_fd == -1)
+        {
+            fatal_error_errno(1, "Fatal error: cannot create a socket");            
+        }
+
+        int port = atoi(get_config_value("port"));
+
+        struct sockaddr_in address;
+        memset(&address, 0, sizeof(address));
+        address.sin_family = AF_INET;
+        address.sin_port = htons(port);
+        address.sin_addr.s_addr = htonl(INADDR_ANY);
+
+        if(bind(socket_fd, (struct sockaddr*) &address, sizeof(address)) == -1)
+        {
+            fatal_error_errno(1, "Cannot bind socket with address");
+        }
+    }
+
+    return socket_fd;
+}
+
+void
+create_pid_file()
+{
+    pid_t pid = getpid();
+
+    int file_fd = load_file(SERVER_PID_FILE, O_WRONLY | O_TRUNC, NULL);
+    if(file_fd != -1)
+    {
+        char pid_str[10];
+        int pid_len = snprintf(pid_str, 10, "%d", pid);
+
+        if(write(file_fd, pid_str, pid_len) == -1)
+        {
+            fatal_error_errno(1, "cannot write PID to the PID file %s", SERVER_PID_FILE);
+        }
+
+        info("writing server PID %d to PID file %s", pid, SERVER_PID_FILE);
+
+        close(file_fd);
+    }
+}
 
 int
 main(int argc, char** argv)
@@ -46,7 +93,7 @@ main(int argc, char** argv)
                 config_file = optarg;
             break;
             case '?':
-               fprintf(stderr, "usage: %s [-c|--config <config_file>]\n", argv[0]);
+               info("usage: %s [-c|--config <config_file>]\n", argv[0]);
                exit(1);
             break;
         }
@@ -55,42 +102,19 @@ main(int argc, char** argv)
     // handle config
     load_server_config(config_file);
 
-    // bind socket
-    int port = get_server_config()->port;
+    print_hr();
 
-    int socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if(socket_fd == -1)
-    {
-        err(1, "Cannot create a socket");
-    }
+    create_pid_file();
 
-    struct sockaddr_in in;
-    memset(&in, 0, sizeof(in));
-    in.sin_family = AF_INET;
-    in.sin_port = htons(port);
-    in.sin_addr.s_addr = htonl(INADDR_ANY);
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_handler = new_message_signal;
+    act.sa_flags = SA_RESTART;
+    sigaction(SIGHUP, &act, NULL);    
 
-    if(bind(socket_fd, (struct sockaddr*) &in, sizeof(in)) == -1)
-    {
-        err(1, "Cannot bind socket with address");
-    }
+    request_control();
+    transmission_control();
+    data_message_control();
 
-    int pid = 0;
-    switch(pid = fork())
-    {
-        case -1:
-            err(1, "Cannot start MTN server");
-        case 0:
-            request_control(socket_fd);
-            break;
-        default:
-            transmission_control(socket_fd);
-            break;
-    }
-
-    waitpid(pid, NULL, 0);
-
-    close(socket_fd);
-
-    return 0;
+    pthread_exit(NULL);
 }

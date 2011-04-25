@@ -37,52 +37,80 @@
  * (Message transmission net)
  */
 
+#define MTN_MSG_LEN 1024
+
+#define MTN_MSG_TYPE_LEN 4
 #define MTN_REQ_TYPE_LEN 6 // length of client request type
-#define MTN_RES_TYPE_LEN 7 // length of server response type
+#define MTN_RES_TYPE_LEN 6 // length of server response type
 
-#define MTN_REQ_DATA_LEN 32 // length of client request data
-#define MTN_RES_DATA_LEN 128 // length of server response data
+//#define MTN_REQ_DATA_LEN 32 // length of client request data
+//#define MTN_RES_DATA_LEN 128 // length of server response data
 
-#define MTN_REQ_MSG_LEN (MTN_REQ_TYPE_LEN + MTN_REQ_DATA_LEN) // length of client request message
-#define MTN_RES_MSG_LEN (MTN_RES_TYPE_LEN + MTN_RES_DATA_LEN) // length of server response to request message
-#define MTN_MSG_BLOCK_LEN 1024 // length of message block
+
+//#define MTN_REQ_MSG_LEN (MTN_MSG_TYPE_LEN + MTN_REQ_TYPE_LEN + MTN_REQ_DATA_LEN) // length of client request message
+//#define MTN_RES_MSG_LEN (MTN_MSG_TYPE_LEN + MTN_RES_TYPE_LEN + MTN_RES_DATA_LEN) // length of server response to request message
+
+#define MTN_DM_HEAD_DATA_LEN (10 + 3 + 3 + 2) // date in seconds + id + blocks count + spaces
+
+#define MTN_DM_BLOCK_HEAD_LEN (10 + 3 + 3 + 2) // length of data message block's head (date in seconds + id + number of block + spaces)
+#define MTN_DM_BLOCK_DATA_LEN (MTN_MSG_LEN - MTN_MSG_TYPE_LEN - MTN_DM_BLOCK_HEAD_LEN) // length of data message block
+
+//#define MTN_REQUEST_LEN (MTN_MSG_TYPE_LEN + MTN_REQUEST_TYPE_LEN + MTN_
+
+// length of data message's head
+//#define MTN_DM_HEAD_LEN (MTN_MSG_TYPE_LEN + 10 + 3 + 3 + 3) 
+
+//#define MTN_DM_BLOCK_LEN (MTN_MSG_TYPE_LEN + 10 + 3 + 3 + 3) 
 
 #define SRV_NAME_LEN 128 // max length of server name
-#define SRV_SET_LEN 8 // max length of subscription expiration time
 #define SRV_DESCR_LEN 256 // max length of server description
+
+#define MTN_REQUEST_TXT "RQST"
+#define MTN_RESPONSE_TXT "RSPS"
+#define MTN_DM_HEAD_TXT "DATA"
+#define MTN_DM_BLOCK_TXT "BLCK"
 
 /* protocol commands client -> server */
 #define MTN_REQ_SUBSCR_TXT "SUBSCR" // request for subscription
-#define MTN_REQ_UPDATE_TXT "UPDATE" // request for subscription
 #define MTN_REQ_RESEND_TXT "RESEND" // request for message block resending
 
 /* protocol commands server -> client */
-#define MTN_RES_SUCC_TXT "SUCCESS" // request for message block resending
-#define MTN_RES_FAIL_TXT "FAILURE" // request for message block resending
+#define MTN_RES_ACCEPT_TXT "ACCEPT" // request for message block resending
+#define MTN_RES_REJECT_TXT "REJECT" // request for message block resending
 
-#define MATCH_REQ(req_buf, req_len, req_type_txt) \
+#define MATCH_STR(first_buf, req_len, req_type_txt) \
     ((req_len) >= strlen(req_type_txt) \
         && strncmp(req_buf, req_type_txt, strlen(req_type_txt)) == 0)
 
 typedef enum
 {
     MTN_REQ_SUBSCR,
-    MTN_REQ_UPDATE,
     MTN_REQ_RESEND,
     MTN_REQ_UNKNOWN
 } mtn_request_type;
 
 typedef enum
 {
-    MTN_RES_SUCCESS,
-    MTN_RES_FAILURE,
+    MTN_RES_ACCEPT,
+    MTN_RES_REJECT,
     MTN_RES_UNKNOWN
 } mtn_response_type;
 
-mtn_request_type get_request_type(const char* req_buf, size_t req_len)
-void get_request_type_str(char* req_type_str, const char* req_buf)
+typedef enum
+{
+    MTN_REQUEST,
+    MTN_RESPONSE,
+    MTN_DM_HEAD,
+    MTN_DM_BLOCK,
+    MTN_UNKNOWN
+} mtn_message_type;
 
-mtn_response_type get_response_type(const char* res_buf, size_t res_len)
-void get_response_type_str(char* res_type_str, const char* res_buf)
+mtn_message_type get_message_type(const char* message);
+mtn_request_type get_request_type(const char* message);
+mtn_response_type get_response_type(const char* message);
+
+void get_message_type_str(char* message_type_str, mtn_message_type);
+void get_request_type_str(char* request_type_str, mtn_request_type);
+void get_response_type_str(char* response_type_str, mtn_response_type);
 
 #endif

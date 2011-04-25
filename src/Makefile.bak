@@ -63,9 +63,8 @@ mtn-server-client-list.o: ../lib/uthash-1.9.3/src/uthash.h
 mtn-server-config.o: mtn-server-config.h mtn-config.h
 mtn-server-config.o: ../lib/uthash-1.9.3/src/uthash.h mtn-common.h
 mtn-server-config.o: mtn-protocol.h
-mtn-server-data-message.o: mtn-server-data-message.h mtn-protocol.h
-mtn-server-data-message.o: mtn-config.h ../lib/uthash-1.9.3/src/uthash.h
-mtn-server-data-message.o: mtn-common.h
+mtn-server-data-message.o: mtn-server-data-message.h mtn-config.h
+mtn-server-data-message.o: ../lib/uthash-1.9.3/src/uthash.h
 mtn-server-receiver.o: mtn-server-receiver.h mtn-protocol.h
 mtn-server-receiver.o: mtn-server-client-list.h
 mtn-server-receiver.o: ../lib/uthash-1.9.3/src/uthash.h mtn-common.h

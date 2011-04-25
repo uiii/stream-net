@@ -1,163 +1,266 @@
 #include "mtn-client-updater.h"
 
 #include <stdio.h>
-
+#include <err.h>
+#include <errno.h>
 #include <pthread.h>
+#include <semaphore.h>
 
-void
-update_control(client_server_list server_list)
-{
-    client_server_list not_subscribed_list = get_not_subscribed_list();
+#include "array_heap.h"
 
-    struct server_list_node* node;
-    DL_FOREACH(server_list, node)
-    {
-        DL_APPEND(not_subscribed_list, node);
-    }
+#include "mtn-client.h"
+#include "mtn-client-request.h"
 
-    pthread_t subscr_t;
-    pthread_t update_t;
+//static client_server_list subscribed_list = NULL;
+//static client_server_list not_subscribed_list = NULL;
 
-    pthread_create(&subscr_t, NULL, subscription_thread(), NULL);
-    pthread_create(&update_t, NULL, update_thread(), NULL);
-}
-
-void
-subscription_thread(void*)
-{
-    client_server_list not_subscribed_list = get_not_subscribed_list();
-
-    // TODO
-}
-
-void
-update_thread(void*)
-{
-    // TODO
-}
-
-client_server_list
-get_subscribed_list()
-{
-    static client_server_list subscribed_list = NULL;
-    return subscribed_list;
-}
-
-client_server_list
-get_not_subscribed_list()
-{
-    static client_server_list not_subscribed_list = NULL;
-    return not_subscribed_list;
-}
-
-void
-add_to_non_subscribed(struct server_list_node* node)
-{
-    client_server_list list = get_not_subscribed_list();
-
-    DL_APPEND(list, node);
-}
-
-void
-add_to_subscribed(struct server_list_node* node, const char* server_reponse)
-{
-    client_server_list list = get_subscribed_list();
-
-    // TODO response
-
-    DL_APPEND(list, node);
-}
-
-/*void
-send_request(struct server_list_node* node, const char* request,
-        void (*response_callback)(struct server_list_node* node, const char* response),
-        void (*non_response_callback)(struct server_list_node* node))*/
+static
 bool
-send_request(struct server_data* data, const char* request, char* response)
+connect_sooner(void* a, void* b)
 {
-    int socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if(socket_fd == -1)
+    struct server_data* first = (struct server_data*) a;
+    struct server_data* second = (struct server_data*) b;
+
+    if(first->not_connect_count < second->not_connect_count)
     {
-        err(1, "Fatal error: cannot create a socket");
+        return true;
     }
-
-    char ip_address_str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &data->address.sin_addr, ip_address_str, INET_ADDRSTRLEN);
-
-    if(sendto(socket_fd, request, MTN_REQ_MSG_LEN, 0,
-        (struct sockaddr *) &(data->address), sizeof(data->address)) == -1)
+    else if(first->not_connect_count == second->not_connect_count)
     {
-        perror("Error: cannot send %s request to %s:%d",
-                request, ip_address_str, ntohs(data->port));
-
-        /*if(non_response_callback)
+        if(first->last_connect_attempt_time <= second->last_connect_attempt_time)
         {
-            non_response_callback(data);
-        }*/
-
-        return false;
-    }
-
-    printf("Sending %s request to %s:%d", ip_address_str, ntohs(data->port));
-
-    fd_set socket_set;
-    FD_ZERO(&socket_set);
-    FD_SET(socket_fd, &socket_set);
-
-    struct timeval timeout;
-    timeout.tv_set = SERVER_RESPONSE_TIMEOUT;
-    timeout.tv_usec = 0;
-
-    if((select(socket_fd + 1, socket_set, NULL, NULL, &timeout)) == -1)
-    {
-        err(1, "Fatal error: select()");
-    }
-
-    if(FD_ISSET(socket_fd, &socket_set))
-    {
-        int res_len;
-        char response[MTN_RES_MSG_LEN + 1];
-        if(res_len = recvfrom(socket_fd, response, MTN_RES_MSG_LEN, 0, NULL, NULL))
-        {
-            char response_type_str[MTN_RES_TYPE_LEN];
-            get_response_type_str(response_type_str, response);
-
-            printf("Receiving %s response from %s:%d",
-                    response_type_str, ip_address_str, ntohs(data->port));
-
-            data->is_responding = true;
-            data->connect_attempts_count = 0;
-
-            response[res_len] = '\0';
-
-            /*if(response_callback)
-            {
-                response_callback(data, response);
-            }*/
+            return true;
         }
         else
         {
-            perror("Error: cannot receive any response to %s request from %s:%d",
-                    request, ip_address_str, ntohs(data->port));
-
             return false;
         }
     }
     else
     {
-        data->is_responding = false;
-        data->connect_attempts_count++;
-
-        printf("Server %s:%d is not responding to %s request\n",
-                ip_address_str, ntohs(data->port), request);
-
-        /*if(non_response_callback)
-        {
-            non_response_callback(data);
-        }*/
-
         return false;
     }
+}
 
-    return true;
+static UT_icd icd = { sizeof(struct server_data*), NULL, NULL, NULL };
+
+static array_heap subscribed_queue = { NULL, connect_sooner };
+static array_heap not_subscribed_queue = { NULL, connect_sooner };
+
+static pthread_mutex_t subscribed_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t not_subscribed_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static pthread_cond_t subscribed_queue_cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t not_subscribed_queue_cond = PTHREAD_COND_INITIALIZER;
+
+static sem_t semaphore;
+
+void
+update_control()
+{
+    utarray_new(subscribed_queue.array, &icd);
+    utarray_new(not_subscribed_queue.array, &icd);
+
+    struct server_map_node* map_node;
+    struct server_map_node* tmp_map_node;
+    HASH_ITER(hh, *client_server_map(), map_node, tmp_map_node)
+    {
+        utarray_push_back(not_subscribed_queue.array, &map_node->data);
+    }
+
+    heap_build(not_subscribed_queue);
+
+    if(sem_init(&semaphore, 0, MAX_ACTIVE_REQUESTS) == -1)
+    {
+        fatal_error_errno(1, "cannot init semaphore");
+    }
+
+    pthread_t subscr_t;
+    pthread_t update_t;
+
+    pthread_create(&subscr_t, NULL, subscription_thread, NULL);
+    pthread_create(&update_t, NULL, update_thread, NULL);
+}
+
+void*
+send_subscription_request_thread(void* server_data)
+{
+    struct server_data* server = (struct server_data*) server_data;
+
+    char request[MTN_MSG_LEN + 1];
+    int request_length = snprintf(request, MTN_MSG_LEN + 1, "%s %s",
+            MTN_REQUEST_TXT, MTN_REQ_SUBSCR_TXT);
+    if(send_request(server, request, request_length))
+    {
+        pthread_mutex_lock(&server->mutex);
+
+        if(get_response_type(server->response) == MTN_RES_ACCEPT)
+        {
+            // server accepts client request
+            // client is now subscribed
+            server->state = SUBSCR;
+
+            char* response_ptr = server->response;
+
+            char line[4096];
+
+            // skip first line
+            get_token(line, &response_ptr, "\n");
+
+            while(get_token(line, &response_ptr, "\n"))
+            {
+                char* line_ptr = line;
+
+                char token[4096];
+                get_token(token, &line_ptr, " ");
+
+                if(streq(token, "name"))
+                {
+                    strcpy(server->name, "");
+                    strcat(server->name, line_ptr + 1);
+                }
+                else if(streq(token, "descr"))
+                {
+                    strcpy(server->descr, "");
+                    strcat(server->descr, line_ptr + 1);
+                }
+            }
+
+            info("server->name '%s'", server->name);
+            info("server->descr '%s'", server->descr);
+        }
+        else
+        {
+            // server rejects client request
+            // client waits for next attempt
+            server->state = WAIT;
+        }
+
+        strcpy(server->response, "");
+
+        pthread_mutex_unlock(&server->mutex);
+    }
+
+    if(server->state == SUBSCR)
+    {
+        pthread_mutex_lock(&subscribed_queue_mutex);
+
+        heap_push(subscribed_queue, &server);
+        pthread_cond_broadcast(&subscribed_queue_cond);
+
+        pthread_mutex_unlock(&server->mutex);
+
+        pthread_mutex_unlock(&subscribed_queue_mutex);
+    }
+    else
+    {
+        pthread_mutex_lock(&not_subscribed_queue_mutex);
+
+        heap_push(not_subscribed_queue, &server);
+        pthread_cond_broadcast(&not_subscribed_queue_cond);
+        
+        pthread_mutex_unlock(&not_subscribed_queue_mutex);
+    }
+
+    // "unlock" semaphore
+    sem_post(&semaphore);
+
+    pthread_exit(NULL);
+}
+
+void*
+subscription_thread(void* arg)
+{
+    pthread_t sender_thread;
+    while(true)
+    {
+        pthread_mutex_lock(&not_subscribed_queue_mutex);
+
+        while(heap_is_empty(not_subscribed_queue))
+        {
+            debug(5, "wait for not subscribed server");
+            pthread_cond_wait(&not_subscribed_queue_cond, &not_subscribed_queue_mutex);
+        }
+
+        bool wait = true;
+        struct timespec timeout;
+        struct server_data* server = *(struct server_data**) heap_first(not_subscribed_queue);
+       
+        while(wait && server->state != SEND_REQ
+                && (server->state != WAIT || server->last_connect_attempt_time + NEXT_CONNECT_ATTEMPT_TIME > current_time()))
+        {
+            timeout.tv_sec = server->last_connect_attempt_time + NEXT_CONNECT_ATTEMPT_TIME;
+            timeout.tv_nsec = 0;
+
+            if(pthread_cond_timedwait(&not_subscribed_queue_cond, &not_subscribed_queue_mutex, &timeout) == ETIMEDOUT)
+            {
+                wait = false;
+            }
+
+            server = *(struct server_data**) heap_first(not_subscribed_queue);
+        }
+
+        heap_pop(not_subscribed_queue);
+
+        // client has an attempt to send
+        // subscription request to the server
+        server->state = SEND_REQ;
+
+        pthread_mutex_unlock(&not_subscribed_queue_mutex);
+
+        // TODO
+        // "lock" semaphore
+        sem_wait(&semaphore);
+
+        pthread_create(&sender_thread, NULL, send_subscription_request_thread, server);
+    }
+
+    // TODO
+    pthread_exit(NULL);
+}
+
+void*
+update_thread(void* arg)
+{
+    pthread_t sender_thread;
+    while(true)
+    {
+        pthread_mutex_lock(&subscribed_queue_mutex);
+
+        while(heap_is_empty(subscribed_queue))
+        {
+            debug(5, "wait for subscribed server");
+            pthread_cond_wait(&subscribed_queue_cond, &subscribed_queue_mutex);
+        }
+
+        bool wait = true;
+        struct timespec timeout;
+        struct server_data* server = *(struct server_data**) heap_first(subscribed_queue);
+        while(wait && (server->last_connect_attempt_time + SUBSCR_EXPIRE_TIME) > current_time())
+        {
+            timeout.tv_sec = server->last_connect_attempt_time + SUBSCR_EXPIRE_TIME;
+            timeout.tv_nsec = 0;
+
+            if(pthread_cond_timedwait(&subscribed_queue_cond, &subscribed_queue_mutex, &timeout) == ETIMEDOUT)
+            {
+                wait = false;
+            }
+
+            server = *(struct server_data**) heap_first(subscribed_queue);
+        }
+
+        heap_pop(subscribed_queue);
+
+        pthread_mutex_unlock(&subscribed_queue_mutex);
+
+        // TODO
+        // "lock" semaphore
+        sem_wait(&semaphore);
+
+        info("update");
+        pthread_create(&sender_thread, NULL, send_subscription_request_thread, server);
+    }
+
+    // TODO
+    pthread_exit(NULL);
 }

@@ -1,0 +1,16 @@
+### MTN server config ###
+
+# name of the server
+name "MTN server"
+
+# subscription expiration time
+set 60
+
+# server description
+descr ""
+
+# listen on port
+port 48888
+
+# level of debug informations to print
+debug 0
